@@ -1,13 +1,16 @@
 import express, { Express } from "express";
 import cors from "cors";
 import mysql, { Connection } from "mysql2/promise";
+import * as dotenv from "dotenv";
 
 async function main() {
+  dotenv.config();
+  const { PORT, MYSQL_HOST, MYSQL_PORT, MYSQL_USER, MYSQL_PASS, MYSQL_DB } = process.env;
   const app: Express = express();
 
-  // port3000でサーバ立ち上げ
-  app.listen(3000, function () {
-    console.log("Node.js is listening to PORT: " + "3000");
+  // port4000でサーバ立ち上げ
+  app.listen(parseInt(PORT as string), function () {
+    console.log(("Node.js is listening to PORT: " + PORT) as string);
   });
 
   // cors設定
@@ -16,17 +19,23 @@ async function main() {
 
   // mysqlに接続
   const connection: Connection = await mysql.createConnection({
-    host: "localhost",
-    port: 3306,
-    user: "user",
-    password: "password",
-    database: "sample",
+    host: MYSQL_HOST,
+    port: parseInt(MYSQL_PORT as string),
+    user: MYSQL_USER,
+    password: MYSQL_PASS,
+    database: MYSQL_DB,
   });
 
-  const sql = "SELECT * FROM todos";
-  const results = await connection.execute(sql);
+  // const sql = "SELECT * FROM todos";
+  // const results = await connection.execute(sql);
 
-  console.log(results);
+  // console.log(results);
+
+  app.get("/api/todos", async (req, res) => {
+    const sql = "SELECT * FROM todos";
+    const [rows] = await connection.execute(sql);
+    res.json(rows);
+  });
 
   // // todoをすべて取得する
   // app.get("/api/todos", (req, res) => {
