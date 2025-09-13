@@ -1,6 +1,6 @@
 import express, { Express } from "express";
 import cors from "cors";
-import mysql, { Connection } from "mysql2/promise";
+import mysql, { Connection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import * as dotenv from "dotenv";
 
 async function main() {
@@ -26,93 +26,36 @@ async function main() {
     database: MYSQL_DB,
   });
 
-  // const sql = "SELECT * FROM todos";
-  // const results = await connection.execute(sql);
-
-  // console.log(results);
+  type Todo = {
+    id: number;
+    title: string;
+    description: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+  };
 
   app.get("/api/todos", async (req, res) => {
     const sql = "SELECT * FROM todos";
-    const [rows] = await connection.execute(sql);
+    const [rows] = await connection.execute<Todo[] & RowDataPacket[]>(sql);
     res.json(rows);
   });
 
-  // // todoをすべて取得する
-  // app.get("/api/todos", (req, res) => {
-  //   const sql = "SELECT * FROM todos";
-  //   connection.query(sql, (err, results) => {
-  //     if (err) {
-  //       console.log(err);
-  //       res.status(500).json();
-  //       return;
-  //     }
-  //     res.json(results);
-  //   });
-  // });
+  app.get("/api/todos/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    const sql = `SELECT * FROM todos WHERE id=${id}`;
+    const [rows] = await connection.execute<Todo[] & RowDataPacket[]>(sql);
+    res.json(rows[0]);
+  });
 
-  // // todoをidで1件取得する
-  // app.get("/api/todos/:id", (req, res) => {
-  //   const id = req.params.id;
-  //   const sql = `SELECT * FROM todos WHERE ${id}`;
-  //   connection.query(sql, (err, results) => {
-  //     if (err) {
-  //       console.log(err);
-  //       res.status(500).json();
-  //       return;
-  //     }
-  //     if (results.length === 0) {
-  //       res.status(404).json();
-  //       return;
-  //     }
-  //     res.json(results[0]);
-  //   });
-  // });
+  app.post("/api/todos", async (req, res) => {
+    const todo = req.body;
+    const sql = `INSERT INTO todos (title, description) VALUES ("${todo.title}", "${todo.description}")`;
+    const [result] = await connection.execute<ResultSetHeader>(sql);
+    res.status(201).json(result.insertId);
+  });
 
-  // // todoを作成する
-  // app.post("/api/todos", (req, res) => {
-  //   const todo = req.body;
-  //   const sql = `
-  //   INSERT INTO todos (title, description)
-  //   VALUES ("${todo.title}", "${todo.description}")
-  // `;
-  //   connection.query(sql, (err, results) => {
-  //     if (err) {
-  //       console.log(err);
-  //       res.status(500).json();
-  //       return;
-  //     }
-  //     res.status(201).json(results.insertId);
-  //   });
-  // });
+  // Update API
 
-  // // ↓ 演習課題の回答
-  // // todoを更新する
-  // app.put("/api/todos/:id", (req, res) => {
-  //   const id = req.params.id;
-  //   const todo = req.body;
-  //   const sql = `UPDATE todos SET title="${req.body.title}" description="${req.body.description}" WHERE id=${id}`;
-  //   connection.query(sql, [todo, { id: id }], (err, result) => {
-  //     if (err) {
-  //       console.log(err);
-  //       res.status(500).json();
-  //       return;
-  //     }
-  //     res.status(200).send();
-  //   });
-  // });
-
-  // // todoを削除する
-  // app.delete("/api/todos/:id", (req, res) => {
-  //   const id = req.params.id;
-  //   const sql = `DELETE FROM todos WHERE ${id}`;
-  //   connection.query(sql, { id: id }, (err) => {
-  //     if (err) {
-  //       console.log(err);
-  //       res.status(500).json();
-  //       return;
-  //     }
-  //     res.status(200).send();
-  //   });
-  // });
+  // Delete API
 }
 main();
