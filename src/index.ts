@@ -35,27 +35,75 @@ async function main() {
   };
 
   app.get("/api/todos", async (req, res) => {
-    const sql = "SELECT * FROM todos";
-    const [rows] = await connection.execute<Todo[] & RowDataPacket[]>(sql);
-    res.json(rows);
+    try {
+      const sql = "SELECT * FROM todos";
+      const [rows] = await connection.execute<Todo[] & RowDataPacket[]>(sql);
+      res.json(rows);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(`execute error: ${err}`);
+        res.status(500).send();
+      }
+    }
   });
 
   app.get("/api/todos/:id", async (req, res) => {
-    const id = parseInt(req.params.id);
-    const sql = `SELECT * FROM todos WHERE id=${id}`;
-    const [rows] = await connection.execute<Todo[] & RowDataPacket[]>(sql);
-    res.json(rows[0]);
+    try {
+      const id = parseInt(req.params.id);
+      const sql = `SELECT * FROM todos WHERE id=${id}`;
+      const [rows] = await connection.execute<Todo[] & RowDataPacket[]>(sql);
+      res.json(rows[0]);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(`execute error: ${err}`);
+        res.status(500).send();
+      }
+    }
   });
 
   app.post("/api/todos", async (req, res) => {
-    const todo = req.body;
-    const sql = `INSERT INTO todos (title, description) VALUES ("${todo.title}", "${todo.description}")`;
-    const [result] = await connection.execute<ResultSetHeader>(sql);
-    res.status(201).json(result.insertId);
+    try {
+      const todo = req.body;
+      const sql = `INSERT INTO todos (title, description) VALUES ("${todo.title}", "${todo.description}")`;
+      const [result] = await connection.execute<ResultSetHeader>(sql);
+      res.status(201).json(result.insertId);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(`execute error: ${err}`);
+        res.status(500).send();
+      }
+    }
   });
 
   // Update API
+  app.put("/api/todos/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const todo: Todo = req.body;
+      const sql = `UPDATE todos SET title="${todo.title}", description="${todo.description}" WHERE id=${id}`;
+      await connection.execute<ResultSetHeader>(sql);
+      res.status(200).send();
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(`execute error: ${err}`);
+        res.status(500).send();
+      }
+    }
+  });
 
   // Delete API
+  app.delete("/api/todos/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const sql = `DELETE FROM todos WHERE id=${id}`;
+      await connection.execute<ResultSetHeader>(sql);
+      res.status(204).send();
+    } catch (err) {
+      if (err instanceof Error) {
+        console.log(`execute error: ${err}`);
+        res.status(500).send();
+      }
+    }
+  });
 }
 main();
