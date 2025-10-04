@@ -1,8 +1,9 @@
 import { Todo } from "../models/todo";
 import { Connection, RowDataPacket } from "mysql2/promise";
 import { NotFoundDataError, SqlError } from "../utils/error";
+import { ITodoRepository } from "./interface";
 
-export class TodoRepository {
+export class TodoRepository implements ITodoRepository {
   private connection: Connection;
 
   constructor(connection: Connection) {
