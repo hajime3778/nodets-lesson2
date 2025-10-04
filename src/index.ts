@@ -1,9 +1,10 @@
 import express, { Express } from "express";
 import cors from "cors";
-import mysql, { Connection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import mysql, { Connection, ResultSetHeader } from "mysql2/promise";
 import { Todo } from "./models/todo";
 import { TodoRepository } from "./repositories/todoRepository";
 import * as dotenv from "dotenv";
+import { NotFoundDataError } from "./utils/error";
 
 async function main() {
   dotenv.config();
@@ -42,17 +43,20 @@ async function main() {
   });
 
   app.get("/api/todos/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const sql = `SELECT * FROM todos WHERE id=${id}`;
-      const [rows] = await connection.execute<Todo[] & RowDataPacket[]>(sql);
-      res.json(rows[0]);
-    } catch (err) {
-      if (err instanceof Error) {
-        console.log(`execute error: ${err}`);
-        res.status(500).send();
-      }
+    const id = parseInt(req.params.id);
+    const result = await todoRepository.getByID(id);
+
+    if (result instanceof NotFoundDataError) {
+      res.status(404).json(result.message);
+      return;
     }
+
+    if (result instanceof Error) {
+      res.status(500).send();
+      return;
+    }
+
+    res.status(200).json(result);
   });
 
   app.post("/api/todos", async (req, res) => {

@@ -1,5 +1,6 @@
 import { Todo } from "../models/todo";
 import { Connection, RowDataPacket } from "mysql2/promise";
+import { NotFoundDataError, SqlError } from "../utils/error";
 
 export class TodoRepository {
   private connection: Connection;
@@ -14,11 +15,24 @@ export class TodoRepository {
       const [rows] = await this.connection.execute<Todo[] & RowDataPacket[]>(sql);
       return rows;
     } catch (err) {
-      if (err instanceof Error) {
-        console.log(`execute error: ${err}`);
-        return err;
+      console.log(`TodoRepository.findAll: ${err}`);
+      return new SqlError(`sql error`);
+    }
+  }
+
+  public async getByID(id: number): Promise<Todo | Error> {
+    try {
+      const sql = `SELECT * FROM todos WHERE id=${id}`;
+      const [rows] = await this.connection.execute<Todo[] & RowDataPacket[]>(sql);
+
+      if (rows.length === 0) {
+        return new NotFoundDataError(`todo is not found`);
       }
-      return new Error();
+
+      return rows[0];
+    } catch (err) {
+      console.log(`TodoRepository.getByID: ${err}`);
+      return new SqlError(`sql error`);
     }
   }
 }
