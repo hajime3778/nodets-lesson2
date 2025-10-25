@@ -1,6 +1,6 @@
 import express, { Express } from "express";
 import cors from "cors";
-import mysql, { Connection, ResultSetHeader } from "mysql2/promise";
+import mysql, { Connection } from "mysql2/promise";
 import { Todo } from "./models/todo";
 import { TodoRepository } from "./repositories/todoRepository";
 import * as dotenv from "dotenv";
@@ -31,7 +31,7 @@ async function main() {
 
   const todoRepository = new TodoRepository(connection);
 
-  app.get("/api/todos", async (req, res) => {
+  app.get("/api/todos", async (_, res) => {
     const result = await todoRepository.findAll();
 
     if (result instanceof Error) {
@@ -60,48 +60,42 @@ async function main() {
   });
 
   app.post("/api/todos", async (req, res) => {
-    try {
-      const todo = req.body;
-      const sql = `INSERT INTO todos (title, description) VALUES ("${todo.title}", "${todo.description}")`;
-      const [result] = await connection.execute<ResultSetHeader>(sql);
-      res.status(201).json(result.insertId);
-    } catch (err) {
-      if (err instanceof Error) {
-        console.log(`execute error: ${err}`);
-        res.status(500).send();
-      }
+    const todo = req.body as Todo;
+    const result = await todoRepository.create(todo);
+
+    if (result instanceof Error) {
+      res.status(500).send();
+      return;
     }
+
+    res.status(201).json(result);
   });
 
   // Update API
   app.put("/api/todos/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const todo: Todo = req.body;
-      const sql = `UPDATE todos SET title="${todo.title}", description="${todo.description}" WHERE id=${id}`;
-      await connection.execute<ResultSetHeader>(sql);
-      res.status(200).send();
-    } catch (err) {
-      if (err instanceof Error) {
-        console.log(`execute error: ${err}`);
-        res.status(500).send();
-      }
+    const id = parseInt(req.params.id);
+    const todo: Todo = req.body;
+    const result = await todoRepository.update(id, todo);
+
+    if (result instanceof Error) {
+      res.status(500).send();
+      return;
     }
+
+    res.status(200).send();
   });
 
   // Delete API
   app.delete("/api/todos/:id", async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const sql = `DELETE FROM todos WHERE id=${id}`;
-      await connection.execute<ResultSetHeader>(sql);
-      res.status(204).send();
-    } catch (err) {
-      if (err instanceof Error) {
-        console.log(`execute error: ${err}`);
-        res.status(500).send();
-      }
+    const id = parseInt(req.params.id);
+    const result = await todoRepository.delete(id);
+
+    if (result instanceof Error) {
+      res.status(500).send();
+      return;
     }
+
+    res.status(200).send();
   });
 }
 main();
