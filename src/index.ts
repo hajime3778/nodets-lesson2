@@ -5,6 +5,7 @@ import { Todo } from "./models/todo";
 import { TodoRepository } from "./repositories/todoRepository";
 import * as dotenv from "dotenv";
 import { NotFoundDataError } from "./utils/error";
+import { TodoService } from "./services/todoService";
 
 async function main() {
   dotenv.config();
@@ -30,9 +31,10 @@ async function main() {
   });
 
   const todoRepository = new TodoRepository(connection);
+  const todoService = new TodoService(todoRepository);
 
   app.get("/api/todos", async (_, res) => {
-    const result = await todoRepository.findAll();
+    const result = await todoService.findAll();
 
     if (result instanceof Error) {
       res.status(500).send();
@@ -44,7 +46,7 @@ async function main() {
 
   app.get("/api/todos/:id", async (req, res) => {
     const id = parseInt(req.params.id);
-    const result = await todoRepository.getByID(id);
+    const result = await todoService.getByID(id);
 
     if (result instanceof NotFoundDataError) {
       res.status(404).json(result.message);
@@ -61,7 +63,7 @@ async function main() {
 
   app.post("/api/todos", async (req, res) => {
     const todo = req.body as Todo;
-    const result = await todoRepository.create(todo);
+    const result = await todoService.create(todo);
 
     if (result instanceof Error) {
       res.status(500).send();
@@ -75,7 +77,12 @@ async function main() {
   app.put("/api/todos/:id", async (req, res) => {
     const id = parseInt(req.params.id);
     const todo: Todo = req.body;
-    const result = await todoRepository.update(id, todo);
+    const result = await todoService.update(id, todo);
+
+    if (result instanceof NotFoundDataError) {
+      res.status(404).send();
+      return;
+    }
 
     if (result instanceof Error) {
       res.status(500).send();
@@ -88,14 +95,14 @@ async function main() {
   // Delete API
   app.delete("/api/todos/:id", async (req, res) => {
     const id = parseInt(req.params.id);
-    const result = await todoRepository.delete(id);
+    const result = await todoService.delete(id);
 
     if (result instanceof Error) {
       res.status(500).send();
       return;
     }
 
-    res.status(200).send();
+    res.status(204).send();
   });
 }
 main();
