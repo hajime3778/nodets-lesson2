@@ -11,3 +11,6 @@
 
 - model (entity)
   - テーブルの形を型として定義する箇所
+
+テスト用ライブラリ導入コマンド
+`npm install -D jest @types/jest ts-jest eslint-plugin-jest`
