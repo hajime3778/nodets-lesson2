@@ -123,6 +123,82 @@ describe("TodoRepository", () => {
       expect(result instanceof SqlError).toBeTruthy();
     });
   });
+  describe("update", () => {
+    it("success", async () => {
+      // todo作成する
+      const repository = new TodoRepository(connection);
+      const createdTodos = await createTodoTestDatas(connection, 1);
+      const createdTodoID = createdTodos[0].id!;
+
+      // 作ったtodoにupdateをかける
+      const updateTodo: Todo = {
+        title: "updated title",
+        description: "updated description",
+      };
+      const result = await repository.update(createdTodoID, updateTodo);
+      if (result instanceof Error) {
+        throw new Error(`Test failed because an error has occured: ${result.message}`);
+      }
+
+      // 作成したtodoを取得する
+      const selectResult = await getTodoByIdForTest(connection, createdTodoID);
+
+      // updateしたtodoの内容と、取得したtodoの内容が同じであることを確認
+      expect(createdTodoID).toBe(selectResult.id);
+      expect(updateTodo.title).toBe(selectResult.title);
+      expect(updateTodo.description).toBe(selectResult.description);
+    });
+
+    it("should return SqlError if database is clushed", async () => {
+      const mockConnection = {
+        execute: jest.fn().mockRejectedValue(new Error("Mocked SQL Error")),
+      } as unknown as Connection;
+
+      const repository = new TodoRepository(mockConnection);
+      const todo: Todo = {
+        title: "sample",
+        description: "sample",
+      };
+      const result = await repository.update(1, todo);
+
+      expect(result instanceof SqlError).toBeTruthy();
+    });
+  });
+
+  describe("delete", () => {
+    it("success", async () => {
+      // todo作成する
+      const repository = new TodoRepository(connection);
+      const createdTodos = await createTodoTestDatas(connection, 1);
+      const createdTodoID = createdTodos[0].id!;
+
+      // 作ったtodoにdeleteをかける
+      const result = await repository.delete(createdTodoID);
+      if (result instanceof Error) {
+        throw new Error(`Test failed because an error has occured: ${result.message}`);
+      }
+
+      // 作成したtodoを取得する
+      const selectResult = await getTodoByIdForTest(connection, createdTodoID);
+
+      // 作成したTodoが取得できないことを確認する
+      //   todoが取得できてしまったなら、削除されているはずなのでテスト失敗とすることで検証
+      if (selectResult !== undefined) {
+        throw new Error(`Test failed because a not deleted todo`);
+      }
+    });
+
+    it("should return SqlError if database is clushed", async () => {
+      const mockConnection = {
+        execute: jest.fn().mockRejectedValue(new Error("Mocked SQL Error")),
+      } as unknown as Connection;
+
+      const repository = new TodoRepository(mockConnection);
+      const result = await repository.delete(1);
+
+      expect(result instanceof SqlError).toBeTruthy();
+    });
+  });
 });
 
 async function createTodoTestDatas(connection: Connection, num: number): Promise<Todo[]> {
