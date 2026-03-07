@@ -26,13 +26,13 @@ describe("TodoRepository", () => {
         throw new Error(`Test failed because an error has occured: ${result.message}`);
       }
 
-      expect(createdTodos.length).toBe(5);
+      expect(5).toBe(createdTodos.length);
 
       for (const todo of result) {
         const expectTodo = createdTodos.filter((t) => t.id === todo.id)[0];
-        expect(todo.id).toBe(expectTodo.id);
-        expect(todo.title).toBe(expectTodo.title);
-        expect(todo.description).toBe(expectTodo.description);
+        expect(expectTodo.id).toBe(todo.id);
+        expect(expectTodo.title).toBe(todo.title);
+        expect(expectTodo.description).toBe(todo.description);
       }
     });
 
@@ -59,9 +59,9 @@ describe("TodoRepository", () => {
         throw new Error(`Test failed because an error has occured: ${getByIdResult.message}`);
       }
 
-      expect(todo.id).toBe(getByIdResult.id);
-      expect(todo.title).toBe(getByIdResult.title);
-      expect(todo.description).toBe(getByIdResult.description);
+      expect(getByIdResult.id).toBe(todo.id);
+      expect(getByIdResult.title).toBe(todo.title);
+      expect(getByIdResult.description).toBe(todo.description);
     });
 
     it("should return NotFoundDataError if id is not exist", async () => {
@@ -103,9 +103,9 @@ describe("TodoRepository", () => {
       const createdID = result;
       const selectResult = await getTodoByIdForTest(connection, createdID);
 
-      expect(createdID).toBe(selectResult.id);
-      expect(todo.title).toBe(selectResult.title);
-      expect(todo.description).toBe(selectResult.description);
+      expect(selectResult.id).toBe(createdID);
+      expect(selectResult.title).toBe(todo.title);
+      expect(selectResult.description).toBe(todo.description);
     });
 
     it("should return SqlError if database is clushed", async () => {
@@ -144,9 +144,9 @@ describe("TodoRepository", () => {
       const selectResult = await getTodoByIdForTest(connection, createdTodoID);
 
       // updateしたtodoの内容と、取得したtodoの内容が同じであることを確認
-      expect(createdTodoID).toBe(selectResult.id);
-      expect(updateTodo.title).toBe(selectResult.title);
-      expect(updateTodo.description).toBe(selectResult.description);
+      expect(selectResult.id).toBe(createdTodoID);
+      expect(selectResult.title).toBe(updateTodo.title);
+      expect(selectResult.description).toBe(updateTodo.description);
     });
 
     it("should return SqlError if database is clushed", async () => {

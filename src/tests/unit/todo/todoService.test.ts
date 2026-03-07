@@ -42,13 +42,13 @@ describe("TodoService", () => {
         throw new Error(`Test failed because an error has occured: ${result.message}`);
       }
 
-      expect(result.length).toBe(5);
+      expect(5).toBe(result.length);
 
       for (const todo of result) {
         const expectTodo = mockTodos.filter((t) => t.id === todo.id)[0];
-        expect(todo.id).toBe(expectTodo.id);
-        expect(todo.title).toBe(expectTodo.title);
-        expect(todo.description).toBe(expectTodo.description);
+        expect(expectTodo.id).toBe(todo.id);
+        expect(expectTodo.title).toBe(todo.title);
+        expect(expectTodo.description).toBe(todo.description);
       }
     });
 
@@ -83,9 +83,9 @@ describe("TodoService", () => {
         throw new Error(`Test failed because an error has occurred: ${result.message}`);
       }
 
-      expect(result.id).toBe(todo.id);
-      expect(result.title).toBe(todo.title);
-      expect(result.description).toBe(todo.description);
+      expect(todo.id).toBe(result.id);
+      expect(todo.title).toBe(result.title);
+      expect(todo.description).toBe(result.description);
     });
     it("should return repository error", async () => {
       const mockRepository = createMockTodoRepository();
@@ -98,7 +98,7 @@ describe("TodoService", () => {
         throw new Error("Test failed because an error has not occurred");
       }
 
-      expect(result.message).toBe("repository error");
+      expect("repository error").toBe(result.message);
     });
   });
 
@@ -118,7 +118,7 @@ describe("TodoService", () => {
         throw new Error(`Test failed because an error has occurred: ${result.message}`);
       }
 
-      expect(result).toBe(1);
+      expect(1).toBe(result);
     });
     it("should return repository error", async () => {
       const mockRepository = createMockTodoRepository();
@@ -135,7 +135,7 @@ describe("TodoService", () => {
         throw new Error("Test failed because an error has not occurred");
       }
 
-      expect(result.message).toBe("repository error");
+      expect("repository error").toBe(result.message);
     });
   });
 
@@ -161,7 +161,7 @@ describe("TodoService", () => {
         throw new Error(`Test failed because an error has occurred: ${result.message}`);
       }
 
-      expect(result).toBe(null);
+      expect(null).toBe(result);
     });
     it("should return notfound error", async () => {
       const mockGetByIDResult: Error = new NotFoundDataError("mock notfound error");
@@ -181,7 +181,7 @@ describe("TodoService", () => {
       }
 
       expect(result instanceof NotFoundDataError).toBeTruthy();
-      expect(result.message).toBe("mock notfound error");
+      expect("mock notfound error").toBe(result.message);
     });
     it("should return repository error", async () => {
       const mockRepository = createMockTodoRepository();
@@ -204,7 +204,7 @@ describe("TodoService", () => {
         throw new Error("Test failed because an error has not occurred");
       }
 
-      expect(result.message).toBe("repository error");
+      expect("repository error").toBe(result.message);
     });
   });
 
@@ -220,7 +220,7 @@ describe("TodoService", () => {
         throw new Error(`Test failed because an error has occurred: ${result.message}`);
       }
 
-      expect(result).toBe(null);
+      expect(null).toBe(result);
     });
     it("should return repository error", async () => {
       const mockRepository = createMockTodoRepository();
@@ -233,7 +233,7 @@ describe("TodoService", () => {
         throw new Error("Test failed because an error has not occurred");
       }
 
-      expect(result.message).toBe("repository error");
+      expect("repository error").toBe(result.message);
     });
   });
 });
